@@ -1,0 +1,13 @@
+samples_table: "config/samples.tsv"
+transcriptome_fasta: "data/ref/Homo_sapiens.GRCh38.cdna.all.fa.gz"
+tx2gene_tsv: "data/ref/tx2gene.tsv"
+gene_sets_gmt: "data/ref/hallmark_pathways.gmt"
+
+salmon:
+  kmer_size: 31
+
+deseq2:
+  reference_level: "control"
+  target_level: "treated"
+  fdr_threshold: 0.05
+  log2fc_threshold: 1.0

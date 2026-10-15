@@ -1,0 +1,9 @@
+Module	Section	Sample Name	Source
+Salmon	all_sections	SRR1039509	/content/drive/MyDrive/rnaseq-snakemake-pipeline/results/salmon/SRR1039509/libParams/flenDist.txt
+Salmon	all_sections	SRR1039512	/content/drive/MyDrive/rnaseq-snakemake-pipeline/results/salmon/SRR1039512/libParams/flenDist.txt
+Salmon	all_sections	SRR1039508	/content/drive/MyDrive/rnaseq-snakemake-pipeline/results/salmon/SRR1039508/libParams/flenDist.txt
+Salmon	all_sections	SRR1039513	/content/drive/MyDrive/rnaseq-snakemake-pipeline/results/salmon/SRR1039513/libParams/flenDist.txt
+fastp	all_sections	SRR1039508	/content/drive/MyDrive/rnaseq-snakemake-pipeline/results/qc/fastp/SRR1039508.json
+fastp	all_sections	SRR1039509	/content/drive/MyDrive/rnaseq-snakemake-pipeline/results/qc/fastp/SRR1039509.json
+fastp	all_sections	SRR1039512	/content/drive/MyDrive/rnaseq-snakemake-pipeline/results/qc/fastp/SRR1039512.json
+fastp	all_sections	SRR1039513	/content/drive/MyDrive/rnaseq-snakemake-pipeline/results/qc/fastp/SRR1039513.json

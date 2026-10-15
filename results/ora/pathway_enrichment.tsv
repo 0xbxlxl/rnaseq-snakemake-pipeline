@@ -1,0 +1,6 @@
+pathway	description	universe_size_M	pathway_in_universe_n	query_size_N	overlap_k	p_value	overlap_genes	padj_bh
+GLUCOCORTICOID_RECEPTOR_PATHWAY	Canonical dexamethasone-responsive genes	6333	17	49	13	1.4633939388833217e-25	CCDC69,CRISPLD2,DUSP1,ERRFI1,FKBP5,GLUL,GPX3,MAOA,MT2A,SAMHD1,SPARCL1,TSC22D3,ZBTB16	7.316969694416609e-25
+EXTRACELLULAR_MATRIX_ORGANIZATION	Airway smooth muscle structural remodeling	6333	11	49	2	0.003085291839625773	COL1A1,LAMA2	0.007713229599064432
+INFLAMMATORY_CYTOKINE_SIGNALING	Pro-inflammatory mediators suppressed by steroids	6333	1	49	0	1.0		1.0
+CELL_CYCLE_G2M_CHECKPOINT	Cell proliferation markers	6333	1	49	0	1.0		1.0
+OXIDATIVE_PHOSPHORYLATION	Mitochondrial respiratory chain	6333	10	49	0	1.0		1.0

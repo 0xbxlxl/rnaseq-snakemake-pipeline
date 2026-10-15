@@ -1,0 +1,136 @@
+import pandas as pd
+
+configfile: "config/config.yaml"
+
+samples_df = pd.read_csv(config["samples_table"], sep="\t").set_index("sample_id", drop=False)
+SAMPLES = samples_df.index.tolist()
+
+rule all:
+    input:
+        "results/qc/multiqc_report.html",
+        "results/deseq2/deseq2_results.tsv",
+        "results/deseq2/normalized_counts.tsv",
+        "results/plots/volcano_plot.pdf",
+        "results/plots/pca_plot.pdf",
+        "results/ora/pathway_enrichment.tsv"
+
+rule trim_reads:
+    input:
+        r1 = lambda wc: samples_df.loc[wc.sample, "fastq_1"],
+        r2 = lambda wc: samples_df.loc[wc.sample, "fastq_2"]
+    output:
+        r1 = "results/trimmed/{sample}_R1.trim.fastq.gz",
+        r2 = "results/trimmed/{sample}_R2.trim.fastq.gz",
+        html = "results/qc/fastp/{sample}.html",
+        json = "results/qc/fastp/{sample}.json"
+    threads: 2
+    log:
+        "logs/fastp/{sample}.log"
+    shell:
+        """
+        fastp -i {input.r1} -I {input.r2} \
+              -o {output.r1} -O {output.r2} \
+              --html {output.html} --json {output.json} \
+              --thread {threads} > {log} 2>&1
+        """
+
+rule salmon_index:
+    input:
+        fasta = config["transcriptome_fasta"]
+    output:
+        index_dir = directory("results/salmon_index")
+    params:
+        k = config["salmon"]["kmer_size"]
+    threads: 4
+    log:
+        "logs/salmon/index.log"
+    shell:
+        """
+        salmon index -t {input.fasta} -i {output.index_dir} -k {params.k} -p {threads} > {log} 2>&1
+        """
+
+rule salmon_quant:
+    input:
+        r1 = "results/trimmed/{sample}_R1.trim.fastq.gz",
+        r2 = "results/trimmed/{sample}_R2.trim.fastq.gz",
+        index_dir = "results/salmon_index"
+    output:
+        quant = "results/salmon/{sample}/quant.sf"
+    params:
+        outdir = "results/salmon/{sample}"
+    threads: 2
+    log:
+        "logs/salmon/{sample}_quant.log"
+    shell:
+        """
+        salmon quant -i {input.index_dir} -l A \
+                     -1 {input.r1} -2 {input.r2} \
+                     --validateMappings -p {threads} \
+                     -o {params.outdir} > {log} 2>&1
+        """
+
+rule multiqc:
+    input:
+        expand("results/qc/fastp/{sample}.json", sample=SAMPLES),
+        expand("results/salmon/{sample}/quant.sf", sample=SAMPLES)
+    output:
+        "results/qc/multiqc_report.html"
+    log:
+        "logs/multiqc/multiqc.log"
+    shell:
+        """
+        multiqc results/qc/fastp results/salmon -o results/qc -n multiqc_report.html --force > {log} 2>&1
+        """
+
+rule deseq2_analysis:
+    input:
+        quants = expand("results/salmon/{sample}/quant.sf", sample=SAMPLES),
+        samples = config["samples_table"],
+        tx2gene = config["tx2gene_tsv"]
+    output:
+        res = "results/deseq2/deseq2_results.tsv",
+        counts = "results/deseq2/normalized_counts.tsv"
+    params:
+        ref = config["deseq2"]["reference_level"],
+        target = config["deseq2"]["target_level"]
+    log:
+        "logs/deseq2/run_deseq2.log"
+    shell:
+        """
+        Rscript workflow/scripts/run_deseq2.R \
+            --samples {input.samples} \
+            --tx2gene {input.tx2gene} \
+            --ref {params.ref} \
+            --target {params.target} \
+            --out-results {output.res} \
+            --out-counts {output.counts} > {log} 2>&1
+        """
+
+rule visualize_and_enrich:
+    input:
+        res = "results/deseq2/deseq2_results.tsv",
+        counts = "results/deseq2/normalized_counts.tsv",
+        samples = config["samples_table"],
+        gmt = config["gene_sets_gmt"]
+    output:
+        volcano = "results/plots/volcano_plot.pdf",
+        pca = "results/plots/pca_plot.pdf",
+        ora = "results/ora/pathway_enrichment.tsv"
+    params:
+        fdr = config["deseq2"]["fdr_threshold"],
+        lfc = config["deseq2"]["log2fc_threshold"]
+    log:
+        "logs/downstream/plot_and_ora.log"
+    shell:
+        """
+        python workflow/scripts/plot_and_ora.py \
+            --deseq {input.res} \
+            --counts {input.counts} \
+            --samples {input.samples} \
+            --gmt {input.gmt} \
+            --fdr {params.fdr} \
+            --lfc {params.lfc} \
+            --out-volcano {output.volcano} \
+            --out-pca {output.pca} \
+            --out-ora {output.ora} > {log} 2>&1
+        """

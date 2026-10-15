@@ -1,0 +1,12 @@
+.snakemake/
+__pycache__/
+.DS_Store
+data/fastq/
+data/ref/*.fa.gz
+data/ref/tx2gene.tsv
+results/trimmed/
+results/salmon_index/
+results/salmon/
+results/qc/fastp/
+results/qc/multiqc_data/
+logs/
